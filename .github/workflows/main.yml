@@ -25,4 +25,4 @@ jobs:
       - uses: JS-DevTools/npm-publish@v1
         with:
           package: "./lib/package.json"
-          token: ${{ secrets.NPM_AUTH_TOKEN }}
+          token: ${{ secrets.NPM_TOKEN }}
