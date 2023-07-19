@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc"
   },
   "author": "Tyson Cadenhead",
   "license": "ISC",
@@ -23,8 +24,9 @@
       "^.+\\.(ts|tsx)$": "ts-jest"
     },
     "testMatch": [
-      "**/__tests__/**/*.+(ts|tsx|js)",
-      "!/**/*.js"
+      "**/__tests__/**/*.+(ts|tsx)",
+      "!/**/*.js",
+      "!/**/*d.ts"
     ],
     "testEnvironment": "node",
     "clearMocks": true

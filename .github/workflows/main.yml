@@ -1,4 +1,4 @@
-name: async-functional-utils
+name: Publish to NPM
 
 on:
   push:

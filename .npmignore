@@ -1,7 +1,8 @@
 node_modules
-lib
+src
 coverage
 .idea
 npm-debug.log
 package-lock.json
 .DS_Store
+__tests__
