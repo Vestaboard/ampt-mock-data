@@ -31,12 +31,40 @@ export const data: Data = {
     keys: Query | string[] | string,
     options?: boolean | getOptions | undefined
   ): Promise<GetBatchResponse<T> | GetResponse<T>> {
+    // Get by label
+    if (typeof options !== "boolean" && options?.label) {
+      return this.getByLabel(options.label, keys, options);
+    }
+
     // Query
     if (typeof keys === "string" && keys.includes("*")) {
       const query = keys.replace("*", "");
 
-      const items = Object.keys(store.root)
+      let afterStart = false;
+
+      const itemKeys =
+        typeof options !== "boolean" && options?.reverse
+          ? Object.keys(store.root).reverse()
+          : Object.keys(store.root);
+
+      const items = itemKeys
         .filter((key) => key.includes(query))
+        .filter((key) => {
+          if (typeof options !== "boolean" && options?.start) {
+            if (key === options.start) {
+              afterStart = true;
+              return false;
+            }
+            return afterStart;
+          }
+          return true;
+        })
+        .filter((_key, index) => {
+          if (typeof options !== "boolean" && options?.limit) {
+            return index < options.limit;
+          }
+          return true;
+        })
         .map((key) => {
           return {
             key,
@@ -46,6 +74,7 @@ export const data: Data = {
 
       return {
         items,
+        lastKey: items[items.length - 1]?.key ?? null,
       } as GetBatchResponse<T>;
     }
 
@@ -73,8 +102,31 @@ export const data: Data = {
     if (typeof keys === "string" && keys.includes("*")) {
       const query = keys.replace("*", "");
 
-      const items = Object.keys(store[label])
+      let afterStart = false;
+
+      const itemKeys =
+        typeof options !== "boolean" && options?.reverse
+          ? Object.keys(store[label]).reverse()
+          : Object.keys(store[label]);
+
+      const items = itemKeys
         .filter((key) => key.includes(query))
+        .filter((key) => {
+          if (typeof options !== "boolean" && options?.start) {
+            if (key === options.start) {
+              afterStart = true;
+              return false;
+            }
+            return afterStart;
+          }
+          return true;
+        })
+        .filter((_key, index) => {
+          if (typeof options !== "boolean" && options?.limit) {
+            return index < options.limit;
+          }
+          return true;
+        })
         .map((key) => {
           return {
             key,
@@ -84,6 +136,7 @@ export const data: Data = {
 
       return {
         items,
+        lastKey: items[items.length - 1]?.key || null,
       } as GetBatchResponse<T>;
     }
 

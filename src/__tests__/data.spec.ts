@@ -38,4 +38,44 @@ describe("Data", () => {
     expect(getResult.items[0].value.hello).toBe("world");
     expect(getResult.items[1].value.hello).toBe("again");
   });
+
+  it("Should reverse results data", async () => {
+    await data.set("test:1", { hello: "world" });
+    await data.set("test:2", { hello: "again" });
+
+    const getResult = await data.get<ITest>("test:*", {
+      reverse: true,
+    });
+
+    expect(getResult.items.length).toBe(2);
+    expect(getResult.items[1].value.hello).toBe("world");
+    expect(getResult.items[0].value.hello).toBe("again");
+  });
+
+  it("Should limit the results", async () => {
+    await data.set("test:1", { hello: "world" });
+
+    await data.set("test:2", { hello: "universe" });
+
+    const result = await data.get<ITest>("test:*", {
+      limit: 1,
+    });
+
+    expect(result.items.length).toBe(1);
+    expect(result.items[0].value.hello).toBe("world");
+  });
+
+  it("Should accept a starting cursor limit the results", async () => {
+    await data.set("test:1", { hello: "world" });
+
+    await data.set("test:2", { hello: "universe" });
+
+    const result = await data.get<ITest>("test:*", {
+      limit: 1,
+      start: "test:1",
+    });
+
+    expect(result.items.length).toBe(1);
+    expect(result.items[0].value.hello).toBe("universe");
+  });
 });
