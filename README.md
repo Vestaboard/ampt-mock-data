@@ -33,6 +33,26 @@ describe("My tests", () => {
 });
 ```
 
+## Resetting
+
+Since this package persists data in memory, it is best practice to reset the data before each unit test using the `reset()` function
+
+```js
+import { data, reset } from "ampt-data-mock";
+
+jest.mock("@ampt/data", () => ({
+  data,
+}));
+
+describe("My tests", () => {
+  beforeEach(() => {
+    reset();
+  });
+
+  // ...
+});
+```
+
 ## Notes
 
 This is still a work in progress. The goal is to support all of the Ampt data API in memory, but we are starting with the simple use-cases.

@@ -24,7 +24,22 @@ let store = {
   label3: {},
   label4: {},
   label5: {},
+  labels: {},
 };
+
+export const reset = () => {
+  store = {
+    root: {},
+    label1: {},
+    label2: {},
+    label3: {},
+    label4: {},
+    label5: {},
+    labels: {},
+  };
+};
+
+const labelKeys = ["label1", "label2", "label3", "label4", "label5"];
 
 export const data: Data = {
   get: async function <T>(
@@ -159,9 +174,25 @@ export const data: Data = {
   remove: async function (keys: string | string[]): Promise<boolean> {
     if (typeof keys === "string") {
       delete store.root[keys];
+
+      if (store.labels[keys]) {
+        labelKeys.forEach((labelKey) => {
+          if (store.labels[keys][labelKey]) {
+            delete store[labelKey][store.labels[keys][labelKey]];
+          }
+        });
+      }
     } else {
       keys.forEach((key) => {
         delete store.root[key];
+
+        if (store.labels[key]) {
+          labelKeys.forEach((labelKey) => {
+            if (store.labels[key][labelKey]) {
+              delete store[labelKey][store.labels[key][labelKey]];
+            }
+          });
+        }
       });
     }
     return true;
@@ -189,25 +220,13 @@ export const data: Data = {
     if (typeof keys === "string") {
       store.root[keys] = value;
 
-      if (typeof opts?.label1 === "string") {
-        store.label1[opts.label1] = value;
-      }
-
-      if (typeof opts?.label2 === "string") {
-        store.label1[opts.label2] = value;
-      }
-
-      if (typeof opts?.label3 === "string") {
-        store.label1[opts.label3] = value;
-      }
-
-      if (typeof opts?.label4 === "string") {
-        store.label1[opts.label4] = value;
-      }
-
-      if (typeof opts?.label5 === "string") {
-        store.label1[opts.label5] = value;
-      }
+      labelKeys.forEach((labelKey) => {
+        if (typeof opts?.[labelKey] === "string") {
+          store[labelKey][opts[labelKey]] = value;
+          store.labels[keys] = store.labels[keys] || {};
+          store.labels[keys][labelKey] = opts[labelKey];
+        }
+      });
 
       return value as SetResponse<T>;
     }

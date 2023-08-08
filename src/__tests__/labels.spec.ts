@@ -1,10 +1,12 @@
-import { data } from "../data";
+import { data, reset } from "../data";
 
 interface ITest {
   hello: string;
 }
 
 describe("Labels", () => {
+  beforeEach(() => reset());
+
   it("Should query by label", async () => {
     await data.set(
       "test:1",
@@ -85,5 +87,21 @@ describe("Labels", () => {
 
     expect(result.items.length).toBe(1);
     expect(result.items[0].value.hello).toBe("universe");
+  });
+
+  it("Should delete a label", async () => {
+    await data.set(
+      "hi:1",
+      { hello: "world" },
+      {
+        label1: "hiLabel:1",
+      }
+    );
+
+    await data.remove("hi:1");
+
+    const result = await data.getByLabel<ITest>("label1", "hiLabel:*");
+
+    expect(result.items.length).toBe(0);
   });
 });

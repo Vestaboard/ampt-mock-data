@@ -1,10 +1,12 @@
-import { data } from "../data";
+import { data, reset } from "../data";
 
 interface ITest {
   hello: string;
 }
 
 describe("Data", () => {
+  beforeEach(() => reset());
+
   it("should set data", async () => {
     const setResult = (await data.set<ITest>("test:1", {
       hello: "world",
