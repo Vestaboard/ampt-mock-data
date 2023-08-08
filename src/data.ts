@@ -64,11 +64,34 @@ export const data: Data = {
       }),
     } as GetBatchResponse<T>;
   },
-  getByLabel: function <T>(
+  getByLabel: async function <T>(
     label: labels,
     keys: Query | string[],
     options?: boolean | getOptions | undefined
-  ): Promise<GetBatchResponse<T>> {
+  ): Promise<GetBatchResponse<T> | GetResponse<T>> {
+    // Query
+    if (typeof keys === "string" && keys.includes("*")) {
+      const query = keys.replace("*", "");
+
+      const items = Object.keys(store[label])
+        .filter((key) => key.includes(query))
+        .map((key) => {
+          return {
+            key,
+            value: store[label][key],
+          };
+        });
+
+      return {
+        items,
+      } as GetBatchResponse<T>;
+    }
+
+    // Single get
+    if (typeof keys === "string") {
+      return store[label][keys] as GetResponse<T>;
+    }
+
     throw new Error("Function not implemented.");
   },
   scan: function <T>(options: boolean | scanOptions): Promise<ScanResponse<T>> {
@@ -112,6 +135,26 @@ export const data: Data = {
     // Single Set
     if (typeof keys === "string") {
       store.root[keys] = value;
+
+      if (typeof opts?.label1 === "string") {
+        store.label1[opts.label1] = value;
+      }
+
+      if (typeof opts?.label2 === "string") {
+        store.label1[opts.label2] = value;
+      }
+
+      if (typeof opts?.label3 === "string") {
+        store.label1[opts.label3] = value;
+      }
+
+      if (typeof opts?.label4 === "string") {
+        store.label1[opts.label4] = value;
+      }
+
+      if (typeof opts?.label5 === "string") {
+        store.label1[opts.label5] = value;
+      }
 
       return value as SetResponse<T>;
     }
