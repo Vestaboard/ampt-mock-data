@@ -110,7 +110,7 @@ export const data: Data = {
   },
   getByLabel: async function <T>(
     label: labels,
-    keys: Query | string[],
+    keys: Query | string[] | string,
     options?: boolean | getOptions | undefined
   ): Promise<GetBatchResponse<T> | GetResponse<T>> {
     // Query
@@ -157,7 +157,15 @@ export const data: Data = {
 
     // Single get
     if (typeof keys === "string") {
-      return store[label][keys] as GetResponse<T>;
+      return {
+        items: [
+          {
+            key: keys,
+            value: store[label][keys],
+          },
+        ],
+        lastKey: null,
+      } as GetBatchResponse<T>;
     }
 
     throw new Error("Function not implemented.");

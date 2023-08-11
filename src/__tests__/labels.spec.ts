@@ -30,12 +30,10 @@ describe("Labels", () => {
       }
     );
 
-    const result = (await data.getByLabel<ITest>(
-      "label1",
-      "label1:1"
-    )) as ITest;
+    // NOTE: I don't think the Ampt types are correct here
+    const result = (await data.getByLabel<ITest>("label1", "label1:1")) as any;
 
-    expect(result.hello).toBe("world");
+    expect(result.items[0].value.hello).toBe("world");
   });
 
   it("Should limit the results", async () => {

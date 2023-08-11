@@ -10,10 +10,10 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@ampt/data@^0.0.1-beta.15":
-  version "0.0.1-beta.15"
-  resolved "https://registry.yarnpkg.com/@ampt/data/-/data-0.0.1-beta.15.tgz#628b18a350f4bfba6c1b51ce3798ce9a3c60db1a"
-  integrity sha512-ZW1nnJJsX0abNSth03pk0DHHEVU2Gkzmuw+uqnEGG0GyAQTUDmfhbPB+BsVHUd2tMoGnQOd2FSnxyzzMXkjMog==
+"@ampt/data@^0.0.1-beta.18":
+  version "0.0.1-beta.18"
+  resolved "https://registry.yarnpkg.com/@ampt/data/-/data-0.0.1-beta.18.tgz#b71219a30c82df39c9e37018e3867180128e4066"
+  integrity sha512-BRZrMVnS2tV8izSttDSmTYeSwQeuUCWYTU4VST7gnpIMDCMvk8ffANxlSLfMsxJxgFaK2etwBk81IWZR/c3Phg==
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.22.5":
   version "7.22.5"
