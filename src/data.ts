@@ -205,13 +205,21 @@ export const data: Data = {
     }
     return true;
   },
-  add: function <T>(
+  add: async function <T>(
     key: string,
     attribute: number | string,
     value?: number | addOptions | boolean,
     opts?: addOptions | boolean
   ): Promise<AddResponse<T>> {
-    throw new Error("Function not implemented.");
+    let existingItem = await this.get(key);
+
+    if (typeof attribute === "string") {
+      existingItem[attribute] = existingItem[attribute] + value;
+    } else {
+      existingItem = existingItem + attribute;
+    }
+
+    return (await this.set(key, existingItem)) as T;
   },
   on: function (
     name: ListenerPath | ListenerPath[],
