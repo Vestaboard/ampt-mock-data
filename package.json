@@ -17,7 +17,7 @@
     "typescript": "^5.1.6"
   },
   "peerDependencies": {
-    "@ampt/data": "^0.0.1-beta.15"
+    "@ampt/data": "*"
   },
   "jest": {
     "transform": {
