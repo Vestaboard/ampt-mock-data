@@ -18,6 +18,7 @@ import {
 } from "@ampt/data";
 
 let store = {
+  subscriptions: {},
   root: {},
   label1: {},
   label2: {},
@@ -29,6 +30,7 @@ let store = {
 
 export const reset = () => {
   store = {
+    subscriptions: {},
     root: {},
     label1: {},
     label2: {},
@@ -40,6 +42,35 @@ export const reset = () => {
 };
 
 const labelKeys = ["label1", "label2", "label3", "label4", "label5"];
+
+const emitToSubscribers = (eventType: string, path: string, data: any) => {
+  const subscribers = Object.keys(store.subscriptions);
+
+  subscribers
+    .filter((subscriber) => {
+      const [subscriberType, ...subscriberParts] = subscriber.split(":");
+
+      // Global subscribers
+      if (subscriber === "*" || subscriber === eventType) {
+        return true;
+      }
+
+      // Path subscribers
+      if (subscriberType == "*" || subscriberType === eventType) {
+        const pathParts = path.split(":");
+        return subscriberParts.every((part, index) => {
+          if (part === "*") {
+            return true;
+          }
+          return part === pathParts[index];
+        });
+      }
+      return false;
+    })
+    .forEach((subscriber) => {
+      store.subscriptions[subscriber].forEach((fn) => fn(data));
+    });
+};
 
 export const data: Data = {
   get: async function <T>(
@@ -170,8 +201,41 @@ export const data: Data = {
 
     throw new Error("Function not implemented.");
   },
-  scan: function <T>(options: boolean | scanOptions): Promise<ScanResponse<T>> {
-    throw new Error("Function not implemented.");
+  scan: async function <T>(
+    options: boolean | scanOptions
+  ): Promise<ScanResponse<T>> {
+    let afterStart = false;
+
+    const itemKeys = Object.keys(store.root);
+
+    const items = itemKeys
+      .filter((key) => {
+        if (typeof options !== "boolean" && options?.start) {
+          if (key === options.start) {
+            afterStart = true;
+            return false;
+          }
+          return afterStart;
+        }
+        return true;
+      })
+      .filter((_key, index) => {
+        if (typeof options !== "boolean" && options?.limit) {
+          return index < options.limit;
+        }
+        return true;
+      })
+      .map((key) => {
+        return {
+          key,
+          value: store.root[key],
+        };
+      });
+
+    return {
+      items,
+      lastKey: items[items.length - 1]?.key ?? null,
+    } as ScanResponse<T>;
   },
   seed: async function (
     data: string | any[],
@@ -181,6 +245,10 @@ export const data: Data = {
   },
   remove: async function (keys: string | string[]): Promise<boolean> {
     if (typeof keys === "string") {
+      emitToSubscribers("deleted", keys, {
+        previous: store.root[keys],
+        name: "deleted",
+      });
       delete store.root[keys];
 
       if (store.labels[keys]) {
@@ -192,6 +260,10 @@ export const data: Data = {
       }
     } else {
       keys.forEach((key) => {
+        emitToSubscribers("deleted", key, {
+          previous: store.root[key],
+          name: "deleted",
+        });
         delete store.root[key];
 
         if (store.labels[key]) {
@@ -212,12 +284,21 @@ export const data: Data = {
     opts?: addOptions | boolean
   ): Promise<AddResponse<T>> {
     let existingItem = await this.get(key);
+    const previous = JSON.parse(JSON.stringify(existingItem || 0));
 
     if (typeof attribute === "string") {
       existingItem[attribute] = existingItem[attribute] + value;
     } else {
-      existingItem = existingItem + attribute;
+      existingItem = (existingItem || 0) + attribute;
     }
+
+    const saveType = previous ? "updated" : "created";
+
+    emitToSubscribers(saveType, key, {
+      name: saveType,
+      item: existingItem,
+      previous,
+    });
 
     return (await this.set(key, existingItem)) as T;
   },
@@ -225,7 +306,14 @@ export const data: Data = {
     name: ListenerPath | ListenerPath[],
     ...handler: [{ timeout: number }, DataEventHandler] | [DataEventHandler]
   ): void {
-    throw new Error("Function not implemented.");
+    const paths = Array.isArray(name) ? name : [name];
+    paths.forEach((path) => {
+      if (!store.subscriptions[path]) {
+        store.subscriptions[path] = [];
+      }
+
+      store.subscriptions[path].push(handler[handler.length - 1]);
+    });
   },
   set: async function <T>(
     keys: any[] | string,
@@ -234,6 +322,9 @@ export const data: Data = {
   ): Promise<SetBatchResponse<T> | SetResponse<T> | T> {
     // Single Set
     if (typeof keys === "string") {
+      const previous = store.root[keys]
+        ? JSON.parse(JSON.stringify(store.root[keys]))
+        : undefined;
       store.root[keys] = value;
 
       labelKeys.forEach((labelKey) => {
@@ -244,8 +335,19 @@ export const data: Data = {
         }
       });
 
+      emitToSubscribers(!!previous ? "updated" : "created", keys, {
+        name: !!previous ? "updated" : "created",
+        item: value,
+        previous: previous,
+      });
+
       return value as SetResponse<T>;
+
+      // Batch Set
+    } else {
+      return {
+        items: await Promise.all(keys.map((key) => data.set(key, value, opts))),
+      };
     }
-    throw new Error("Function not implemented.");
   },
 };
