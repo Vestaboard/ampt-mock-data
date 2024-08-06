@@ -1,5 +1,7 @@
 import { data, reset } from "../data";
 
+import { handledEvent } from "../helpers";
+
 describe("data events", () => {
   afterEach(reset);
 
@@ -7,20 +9,14 @@ describe("data events", () => {
     const spy = jest.fn();
     data.on("*", spy);
     data.set("FOO:1", { id: "1" });
-    expect(spy).toHaveBeenCalledWith({
-      name: "created",
-      item: { id: "1" },
-    });
+    expect(spy).toHaveBeenCalledWith(handledEvent("created", { id: "1" }));
   });
 
   it("Should listen to created events", () => {
     const spy = jest.fn();
     data.on("created", spy);
     data.set("FOO:1", { id: "1" });
-    expect(spy).toHaveBeenCalledWith({
-      name: "created",
-      item: { id: "1" },
-    });
+    expect(spy).toHaveBeenCalledWith(handledEvent("created", { id: "1" }));
   });
 
   it("Should not emit created events to update listeners", () => {
@@ -36,11 +32,9 @@ describe("data events", () => {
     data.set("FOO:1", { id: "1" });
     data.set("FOO:1", { id: "2" });
 
-    expect(spy).toHaveBeenCalledWith({
-      name: "updated",
-      previous: { id: "1" },
-      item: { id: "2" },
-    });
+    expect(spy).toHaveBeenCalledWith(
+      handledEvent("updated", { id: "2" }, { id: "1" })
+    );
   });
 
   it("Should listen to deleted events", () => {
@@ -49,10 +43,9 @@ describe("data events", () => {
     data.set("FOO:1", { id: "1" });
     data.remove("FOO:1");
 
-    expect(spy).toHaveBeenLastCalledWith({
-      name: "deleted",
-      previous: { id: "1" },
-    });
+    expect(spy).toHaveBeenLastCalledWith(
+      handledEvent("deleted", null, { id: "1" })
+    );
   });
 
   it("Should listen for specific paths", () => {
@@ -62,7 +55,8 @@ describe("data events", () => {
 
     expect(spy).toHaveBeenCalledWith({
       name: "created",
-      item: { id: "1" },
+      item: { value: { id: "1" } },
+      previous: {},
     });
   });
 
@@ -71,9 +65,6 @@ describe("data events", () => {
     data.on("*:FOO:BAR:1", spy);
     data.set("FOO:BAR:1", { id: "1" });
 
-    expect(spy).toHaveBeenCalledWith({
-      name: "created",
-      item: { id: "1" },
-    });
+    expect(spy).toHaveBeenCalledWith(handledEvent("created", { id: "1" }));
   });
 });

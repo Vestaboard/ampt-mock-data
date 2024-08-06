@@ -68,7 +68,17 @@ const emitToSubscribers = (eventType: string, path: string, data: any) => {
       return false;
     })
     .forEach((subscriber) => {
-      store.subscriptions[subscriber].forEach((fn) => fn(data));
+      store.subscriptions[subscriber].forEach((fn) =>
+        fn({
+          item: {
+            value: data.item,
+          },
+          previous: {
+            value: data.previous,
+          },
+          name: data.name,
+        })
+      );
     });
 };
 
