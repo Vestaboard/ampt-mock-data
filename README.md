@@ -33,6 +33,40 @@ describe("My tests", () => {
 });
 ```
 
+### Events and Tasks
+
+We also include mocks to override Ampt events and tasks. They can be used with a testing library in a similar fashion:
+
+```js
+import { task, events } from "ampt-data-mock";
+
+jest.mock("@ampt/sdk", () => ({
+  task,
+  events,
+}));
+```
+
+Events are triggered immediately upon publishing so that you can syncronously validate your end to end tests.
+
+Tasks can be tested by exporting them and calling `.run()` inside your tests suite.
+
+```js
+// Your code
+import { task } from "@ampt/sdk";
+
+const myTask = task("my task", (event) => {
+  return true;
+});
+
+// Your test
+describe("My Task", () => {
+  it("Should run my task", async () => {
+    const result = await myTask.run();
+    expect(result).toEqual(true);
+  });
+});
+```
+
 ## Resetting
 
 Since this package persists data in memory, it is best practice to reset the data before each unit test using the `reset()` function
