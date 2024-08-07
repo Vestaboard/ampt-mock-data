@@ -43,7 +43,7 @@ export const events = {
     subscriptions[event].push(callbackFn);
     return null;
   },
-  publish: (
+  publish: async (
     name: string,
     eventOrConfig: { after: StringNumberDate } | any,
     event?: any
@@ -52,9 +52,11 @@ export const events = {
     if (!subscriptions[name]) {
       return;
     }
-    subscriptions[name].forEach((callback) => {
-      callback({ name, body });
-    });
+    await Promise.all(
+      (subscriptions[name] || []).map(async (callback) => {
+        return await callback({ name, body });
+      })
+    );
   },
   reset: () => {
     subscriptions = {};
